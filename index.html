@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>シンプルクイズ</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      margin-top: 50px;
+      padding: 20px;
+      background-color: white;
+      max-width: 600px;
+      margin: 50px auto;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    button {
+      display: block;
+      margin: 10px auto;
+      padding: 10px 20px;
+      border: none;
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .result {
+      font-size: 20px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>シンプルクイズ</h1>
+  <div id="quiz-container"></div>
+  <button id="submit-btn">結果を表示</button>
+  <div class="result" id="result"></div>
+  <button id="share-btn" style="display:none;">スコアをシェアする</button>
+</div>
+
+<script>
+  // クイズデータ
+  const quiz1 = [
+    { question: "1+1は？", options: ["1", "2", "3", "4"], answer: 1 },
+    { question: "富士山の高さは？", options: ["2776m", "3776m", "4776m", "5776m"], answer: 1 },
+    { question: "日本の首都は？", options: ["大阪", "京都", "東京", "福岡"], answer: 2 },
+    // ... 他の20問を追加
+  ];
+
+  const quiz2 = [
+    { question: "水は何度で凍る？", options: ["0°C", "10°C", "50°C", "100°C"], answer: 0 },
+    { question: "太陽は東から昇る？", options: ["はい", "いいえ", "場合による", "わからない"], answer: 0 },
+    // ... 他の10問を追加
+  ];
+
+  let selectedQuestions = [];
+
+  // ランダムにn問選択する関数
+  function getRandomQuestions(quizArray, n) {
+    const shuffled = quizArray.sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, n);
+  }
+
+  // クイズを表示する関数
+  function displayQuiz() {
+    selectedQuestions = [
+      ...getRandomQuestions(quiz1, 3), 
+      ...getRandomQuestions(quiz2, 2)
+    ];
+    const quizContainer = document.getElementById("quiz-container");
+    quizContainer.innerHTML = "";
+    selectedQuestions.forEach((q, index) => {
+      const questionHTML = `
+        <div>
+          <p>${q.question}</p>
+          ${q.options.map((option, i) => `
+            <label>
+              <input type="radio" name="question${index}" value="${i}">
+              ${option}
+            </label>
+          `).join('')}
+        </div>
+      `;
+      quizContainer.innerHTML += questionHTML;
+    });
+  }
+
+  // スコアを計算して結果を表示する関数
+  function calculateScore() {
+    let score = 0;
+    selectedQuestions.forEach((q, index) => {
+      const selectedOption = document.querySelector(`input[name="question${index}"]:checked`);
+      if (selectedOption && parseInt(selectedOption.value) === q.answer) {
+        score++;
+      }
+    });
+    const totalScore = Math.round((score / selectedQuestions.length) * 100);
+    document.getElementById("result").innerText = `あなたのスコア: ${totalScore}点`;
+    document.getElementById("share-btn").style.display = "block";
+    return totalScore;
+  }
+
+  // SNSシェアリンクを生成する関数
+  function shareScore(score) {
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent(`私のスコアは${score}点でした！`);
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
+    window.open(twitterUrl, "_blank");
+  }
+
+  // イベントリスナーの登録
+  document.getElementById("submit-btn").addEventListener("click", () => {
+    const score = calculateScore();
+  });
+
+  document.getElementById("share-btn").addEventListener("click", () => {
+    const score = document.getElementById("result").innerText.match(/\d+/)[0];
+    shareScore(score);
+  });
+
+  // ページ読み込み時にクイズを表示
+  window.onload = displayQuiz;
+</script>
+
+</body>
+</html>
